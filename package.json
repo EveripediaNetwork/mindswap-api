@@ -1,0 +1,19 @@
+{
+  "name": "mindswap-api",
+  "version": "1.0.0",
+  "description": "Mindswap API",
+  "license": "MIT",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=8.10.0"
+  },
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "eosjs": "^21.0.3",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.0.0",
+    "eslint-plugin-node": "^11.1.0"
+  }
+}
