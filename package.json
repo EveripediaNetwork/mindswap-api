@@ -8,9 +8,11 @@
     "node": ">=8.10.0"
   },
   "dependencies": {
+    "@dfuse/client": "^0.3.17",
     "dotenv": "^8.2.0",
     "eosjs": "^21.0.3",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "ws": "^7.4.1"
   },
   "devDependencies": {
     "eslint": "^7.0.0",
