@@ -5,76 +5,6 @@ const {createDfuseClient} = require("@dfuse/client")
 
 let balances = [
     {
-        name: "IQ",
-        precision: 3,
-        contract: "everipediaiq",
-        balance: 0,
-        icon: "tokens/iq.png",
-    },
-    {
-        name: "EOS",
-        precision: 4,
-        contract: "eosio.token",
-        balance: 0,
-        icon: "tokens/eos.png",
-    },
-    {
-        name: "YETRUMP",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/yestrump.png",
-    },
-    {
-        name: "NOTRUMP",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/notrump.png",
-    },
-    {
-        name: "YVAC",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/yvac.png",
-    },
-    {
-        name: "NVAC",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/nvac.png",
-    },
-    {
-        name: "YESDFS",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/yesdfs.png",
-    },
-    {
-        name: "NODFS",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/nodfs.png",
-    },
-    {
-        name: "YEIQUPB",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/yeskrw.png",
-    },
-    {
-        name: "NOIQUPB",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/nokrw.png",
-    },
-    {
         name: "IQYDFS",
         precision: 3,
         contract: "mindswapswap",
@@ -138,20 +68,6 @@ let balances = [
         icon: "tokens/eos.png",
     },
     {
-        name: "YEBIDEN",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/yebiden.png",
-    },
-    {
-        name: "NOBIDEN",
-        precision: 3,
-        contract: "prediqtokens",
-        balance: 0,
-        icon: "tokens/nobiden.png",
-    },
-    {
         name: "IQYBID",
         precision: 3,
         contract: "mindswapswap",
@@ -178,8 +94,8 @@ module.exports = async (req, res) => {
         network: 'eos.dfuse.eosnation.io' // 'kylin.dfuse.eosnation.io'
     });
 
-    const balancesQuery = `query($account: String!) {
-        accountBalances(account: $account, limit: 100) {
+    const historyQuery = `query ($query: String!, $limit: Int64!, $cursor: String!, $account: String!) {
+    accountBalances(account: $account, limit: 100) {
             edges {
                 node {
                     contract
@@ -188,13 +104,51 @@ module.exports = async (req, res) => {
                     balance
                 }
             }
+  }
+  searchTransactionsBackward(query: $query, limit: $limit, cursor: $cursor) {
+    cursor
+    results {
+      block {
+        timestamp
+      }
+      trace {
+        status
+        matchingActions {
+          authorization {
+            actor
+          }
+          name
+          json
+          dbOps {
+            operation
+            oldJSON {
+              object
+            }
+            newJSON {
+              object
+            }
+          }
         }
-    }`
+      }
+    }
+  }
+}
+`
 
     try {
-        const response = await client.graphql(balancesQuery, {
-            variables: {account: req.query.account},
+        const response = await client.graphql(historyQuery, {
+            variables: {
+                account: req.query.account,
+                "limit": 100,
+                "cursor": "",
+                "query": "account:mindswapswap (action:addliquidity OR action:remliquidity) auth:" + req.query.account
+            },
         })
+
+        const states = await client.stateTableScopes("mindswapswap", "stat");
+        let pools = [];
+        const tables = await client.stateTablesForScopes("mindswapswap", states.scopes, "stat", { json: true, keyType: "symbol_code" } );
+        console.log(tables);
 
         response.data.accountBalances.edges.forEach((balance) => {
             balances.forEach(initialBalance => {
@@ -212,11 +166,14 @@ module.exports = async (req, res) => {
 
         client.release()
 
-        res.status(200).send(balances);
+        res.status(200).send({
+            pools: tables,
+            current: balances,
+            history: response.data.searchTransactionsBackward.results
+        });
+
     } catch (error) {
         console.log("An error occurred", error)
         res.status(500).send('ERROR 500');
     }
-
-
 }
