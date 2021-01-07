@@ -4,7 +4,6 @@ global.WebSocket = require("ws");
 const {createDfuseClient} = require("@dfuse/client")
 
 module.exports = async (req, res) => {
-    res.setHeader('Cache-Control', 'max-age=0, s-maxage=600')
     const client = createDfuseClient({
         authentication: false,
         network: 'eos.dfuse.eosnation.io' // 'kylin.dfuse.eosnation.io'
@@ -23,6 +22,7 @@ module.exports = async (req, res) => {
             pools.push(table.rows[0]);
         })
 
+        res.setHeader('Cache-Control', 'Cache-Control: s-maxage=1, stale-while-revalidate');
         res.status(200).send({
             pools
         });

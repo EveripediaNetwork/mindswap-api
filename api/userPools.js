@@ -5,7 +5,6 @@ const {createDfuseClient} = require("@dfuse/client")
 let {balances} = require("./src/constants");
 
 module.exports = async (req, res) => {
-    // res.setHeader('Cache-Control', 'max-age=0, s-maxage=86400')
     if (!req.query.account) {
         return res.status(403).send('ERROR');
     }
@@ -90,6 +89,7 @@ module.exports = async (req, res) => {
             });
         })
 
+        res.setHeader('Cache-Control', 'max-age=0, s-maxage=600');
         res.status(200).send({
             pools: pools,
             current: poolBalances,
