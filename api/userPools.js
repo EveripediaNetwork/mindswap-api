@@ -89,11 +89,39 @@ module.exports = async (req, res) => {
             });
         })
 
+        const responseHistory = response.data.searchTransactionsBackward.results;
+        let transactionHistory=[];
+        if(responseHistory){
+          responseHistory.forEach( transaction => {
+            let txn = {}
+            txn.time = transaction.block.timestamp;
+            
+            const action = transaction.trace.matchingActions[0];
+            txn.event = action.name;
+            txn.toTrade1 = action.json.max_asset1;
+            txn.toTrade2 = action.json.max_asset2;
+            txn.toBuy = action.json.to_buy;
+            txn.user = action.json.user;
+
+            const op = transaction.trace.matchingActions[0].dbOps;
+            txn.oldBalance = op[2].oldJSON.object ? op[2].oldJSON.object.balance : `0.00 ${op[2].newJSON.object.balance.split(" ")[1]}`;
+            txn.newBalance = op[2].newJSON.object.balance;
+            txn.oldPool1 = op[3].oldJSON.object.pool1.quantity;
+            txn.newPool1 = op[3].newJSON.object.pool1.quantity;
+            txn.oldPool2 = op[3].oldJSON.object.pool2.quantity;
+            txn.newPool2 = op[3].newJSON.object.pool2.quantity;
+            txn.oldSupply = op[3].oldJSON.object.supply;
+            txn.newSupply = op[3].newJSON.object.supply;
+            transactionHistory.push(txn);
+          });
+        }
+        
         res.setHeader('Cache-Control', 'max-age=0, s-maxage=600');
         res.status(200).send({
             pools: pools,
             current: poolBalances,
-            history: (req.query.hideHistory && req.query.hideHistory === "true") ? null : response.data.searchTransactionsBackward.results
+            history: (req.query.hideHistory && req.query.hideHistory === "true") ? null : response.data.searchTransactionsBackward.results,
+            transactions: (transactionHistory) ? transactionHistory : null,
         });
 
     } catch (error) {
