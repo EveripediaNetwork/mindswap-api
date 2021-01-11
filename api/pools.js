@@ -6,7 +6,7 @@ const {createDfuseClient} = require("@dfuse/client")
 module.exports = async (req, res) => {
     const client = createDfuseClient({
         authentication: false,
-        network: 'eos.dfuse.eosnation.io' // 'kylin.dfuse.eosnation.io'
+        network: process.env.DFUSE_URL
     });
 
     try {

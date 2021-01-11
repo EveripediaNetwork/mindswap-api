@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
 
     const client = createDfuseClient({
         authentication: false,
-        network: 'eos.dfuse.eosnation.io' // 'kylin.dfuse.eosnation.io'
+        network: process.env.DFUSE_URL
     });
 
     const historyQuery = `query ($query: String!, $limit: Int64!, $cursor: String!, $account: String!) {
@@ -95,7 +95,7 @@ module.exports = async (req, res) => {
           responseHistory.forEach( transaction => {
             let txn = {}
             txn.time = transaction.block.timestamp;
-            
+
             const action = transaction.trace.matchingActions[0];
             txn.event = action.name;
             txn.toTrade1 = action.json.max_asset1;
@@ -115,7 +115,7 @@ module.exports = async (req, res) => {
             transactionHistory.push(txn);
           });
         }
-        
+
         res.setHeader('Cache-Control', 'max-age=0, s-maxage=600');
         res.status(200).send({
             pools: pools,

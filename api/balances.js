@@ -2,7 +2,7 @@ require('dotenv').config()
 global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
 const {createDfuseClient} = require("@dfuse/client")
-let { balances } = require("./src/constants");
+let {balances} = require("./src/constants");
 
 module.exports = async (req, res) => {
     if (!req.query.account) {
@@ -11,7 +11,7 @@ module.exports = async (req, res) => {
 
     const client = createDfuseClient({
         authentication: false,
-        network: 'eos.dfuse.eosnation.io' // 'kylin.dfuse.eosnation.io'
+        network: process.env.DFUSE_URL
     });
 
     const balancesQuery = `query($account: String!) {
@@ -31,6 +31,19 @@ module.exports = async (req, res) => {
         const response = await client.graphql(balancesQuery, {
             variables: {account: req.query.account},
         })
+        let tokensToRefresh = [];
+        if (req.query.refresh) {
+            const tokensAccount = req.query.refresh.split(",");
+            for (const account of tokensAccount) {
+                const balance = account.split("-");
+                const res = await client.stateTable(balance[0], req.query.account, "accounts");
+                for (const row of res.rows) {
+                    if (tokenFromBalance(row.json.balance) === balance[1]) {
+                        tokensToRefresh[account] = balanceToInt(row.json.balance);
+                    }
+                }
+            }
+        }
 
         response.data.accountBalances.edges.forEach((balance) => {
             balances.forEach(initialBalance => {
@@ -41,7 +54,8 @@ module.exports = async (req, res) => {
                     balance.node.contract === initialBalance.contract &&
                     balance.node.symbol === initialBalance.name
                 ) {
-                    initialBalance.balance = parseInt(balance.node.balance.split(" ")[0].replace(".", ""))
+                    const key = balance.node.contract + '-' + balance.node.symbol;
+                    initialBalance.balance = (tokensToRefresh[key]) ? tokensToRefresh[key] : balanceToInt(balance.node.balance);
                 }
             });
         })
@@ -54,4 +68,12 @@ module.exports = async (req, res) => {
         console.error("An error occurred", error)
         res.status(500).send('ERROR 500');
     }
+}
+
+function balanceToInt(balance) {
+    return parseInt(balance.split(" ")[0].replace(".", ""))
+}
+
+function tokenFromBalance(balance) {
+    return balance.split(" ")[1]
 }
