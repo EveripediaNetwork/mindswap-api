@@ -3,6 +3,7 @@ global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
 const {createDfuseClient} = require("@dfuse/client")
 let {balances} = require("./src/constants");
+let {tokens} = require("./src/constants")
 
 module.exports = async (req, res) => {
     if (!req.query.account) {
@@ -115,6 +116,15 @@ module.exports = async (req, res) => {
             transactionHistory.push(txn);
           });
         }
+        
+        pools.forEach( pool => {
+          pool1Name = pool.json.pool1.quantity.split(" ")[1];
+          pool2Name = pool.json.pool2.quantity.split(" ")[1];
+          const foundToken1 = tokens.find( token => token.name === pool1Name);
+          const foundToken2 = tokens.find( token => token.name === pool2Name);
+          pool.json.pool1.precision = foundToken1.precision; 
+          pool.json.pool2.precision = foundToken2.precision; 
+        });
 
         res.setHeader('Cache-Control', 'max-age=0, s-maxage=600');
         res.status(200).send({
