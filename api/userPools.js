@@ -8,7 +8,7 @@ module.exports = async (req, res) => {
     if (!req.query.account) {
         return res.status(403).send('ERROR');
     }
-    
+
     const addAssetAmount = (original, add, portionOriginal = 1, portionAdd = 1) => {
         const originalAmt = portionOriginal * Number(original.split(" ")[0]);
         const addAmt = portionAdd * Number(add.split(" ")[0]);
@@ -102,6 +102,7 @@ module.exports = async (req, res) => {
         const responseHistory = response.data.searchTransactionsBackward.results;
         let transactionHistory = [];
         const transactionHistoryByPool = {};
+        const realizedPnl = {};
         if (responseHistory) {
             responseHistory.forEach(transaction => {
                 let txn = {};
@@ -151,69 +152,68 @@ module.exports = async (req, res) => {
                 }
                 transactionHistoryByPool[txn.supplyToken].push(txn);
             });
-        }
 
-        const realizedPnl = {};
-        Object.entries(transactionHistoryByPool).map(([poolToken, allTxForPool]) => {
+            Object.entries(transactionHistoryByPool).map(([poolToken, allTxForPool]) => {
 
-            if (!(poolToken in realizedPnl)) {
-                realizedPnl[poolToken] = [];
-            }
-
-            const fifo = [];
-            allTxForPool.sort((a, b) => a.time > b.time ? 1 : -1).forEach(tx => {
-                if (tx.event === 'remliquidity') {
-                    let poolSharesToRemove = getAssetAmount(tx.toBuySell);
-                    const realized = {
-                        txId: tx.txId,
-                        time: tx.time,
-                        poolShares: poolSharesToRemove,
-                        token1Symbol: tx.toTrade1.split(" ")[1],
-                        token2Symbol: tx.toTrade2.split(" ")[1],
-                        addToken1: toAsset(0, tx.pool1Delta),
-                        addToken2: toAsset(0, tx.pool2Delta),
-                        remToken1: subtractAssetAmount(toAsset(0, tx.pool1Delta), tx.pool1Delta),
-                        remToken2: subtractAssetAmount(toAsset(0, tx.pool2Delta), tx.pool2Delta),
-                    };
-                    while (poolSharesToRemove > 0) {
-                        const oldestAdd = fifo.pop();
-                        if (oldestAdd == null) {
-                            console.log("error seems to be removing more liq than added?", poolSharesToRemove, poolToken, fifo)
-                            break;
-                        }
-
-                        const oldAddPoolShares = getAssetAmount(oldestAdd.toBuySell);
-
-                        if (poolSharesToRemove < oldAddPoolShares) {
-                            // removing amount smaller than the add
-                            const portionOfPool = poolSharesToRemove / oldAddPoolShares;
-
-                            // update the previous add event first
-                            oldestAdd.pool1Delta = subtractAssetAmount(oldestAdd.pool1Delta, oldestAdd.pool1Delta, 1, portionOfPool);
-                            oldestAdd.pool2Delta = subtractAssetAmount(oldestAdd.pool2Delta, oldestAdd.pool2Delta, 1, portionOfPool);
-                            oldestAdd.toBuySell = subtractAssetAmount(oldestAdd.toBuySell, toAsset(poolSharesToRemove, tx.toBuySell));
-                            fifo.push(oldestAdd);
-
-                            // update the realized Pnl entry second
-                            realized.addToken1 = addAssetAmount(realized.addToken1, oldestAdd.pool1Delta, 1, portionOfPool);
-                            realized.addToken2 = addAssetAmount(realized.addToken1, oldestAdd.pool2Delta, 1, portionOfPool);
-
-                            realized.matchType = "hasPartial";
-
-                            poolSharesToRemove = 0;
-                        } else {
-                            realized.addToken1 = addAssetAmount(realized.addToken1, oldestAdd.pool1Delta, 1, 1);
-                            realized.addToken2 = addAssetAmount(realized.addToken1, oldestAdd.pool2Delta, 1, 1);
-                            poolSharesToRemove -= oldAddPoolShares;
-                        }
-                    }
-
-                    realizedPnl[poolToken].push(realized);
-                } else {
-                    fifo.unshift({...tx});
+                if (!(poolToken in realizedPnl)) {
+                    realizedPnl[poolToken] = [];
                 }
+
+                const fifo = [];
+                allTxForPool.sort((a, b) => a.time > b.time ? 1 : -1).forEach(tx => {
+                    if (tx.event === 'remliquidity') {
+                        let poolSharesToRemove = getAssetAmount(tx.toBuySell);
+                        const realized = {
+                            txId: tx.txId,
+                            time: tx.time,
+                            poolShares: poolSharesToRemove,
+                            token1Symbol: tx.toTrade1.split(" ")[1],
+                            token2Symbol: tx.toTrade2.split(" ")[1],
+                            addToken1: toAsset(0, tx.pool1Delta),
+                            addToken2: toAsset(0, tx.pool2Delta),
+                            remToken1: subtractAssetAmount(toAsset(0, tx.pool1Delta), tx.pool1Delta),
+                            remToken2: subtractAssetAmount(toAsset(0, tx.pool2Delta), tx.pool2Delta),
+                        };
+                        while (poolSharesToRemove > 0) {
+                            const oldestAdd = fifo.pop();
+                            if (oldestAdd == null) {
+                                console.log("error seems to be removing more liq than added?", poolSharesToRemove, poolToken, fifo)
+                                break;
+                            }
+
+                            const oldAddPoolShares = getAssetAmount(oldestAdd.toBuySell);
+
+                            if (poolSharesToRemove < oldAddPoolShares) {
+                                // removing amount smaller than the add
+                                const portionOfPool = poolSharesToRemove / oldAddPoolShares;
+
+                                // update the previous add event first
+                                oldestAdd.pool1Delta = subtractAssetAmount(oldestAdd.pool1Delta, oldestAdd.pool1Delta, 1, portionOfPool);
+                                oldestAdd.pool2Delta = subtractAssetAmount(oldestAdd.pool2Delta, oldestAdd.pool2Delta, 1, portionOfPool);
+                                oldestAdd.toBuySell = subtractAssetAmount(oldestAdd.toBuySell, toAsset(poolSharesToRemove, tx.toBuySell));
+                                fifo.push(oldestAdd);
+
+                                // update the realized Pnl entry second
+                                realized.addToken1 = addAssetAmount(realized.addToken1, oldestAdd.pool1Delta, 1, portionOfPool);
+                                realized.addToken2 = addAssetAmount(realized.addToken1, oldestAdd.pool2Delta, 1, portionOfPool);
+
+                                realized.matchType = "hasPartial";
+
+                                poolSharesToRemove = 0;
+                            } else {
+                                realized.addToken1 = addAssetAmount(realized.addToken1, oldestAdd.pool1Delta, 1, 1);
+                                realized.addToken2 = addAssetAmount(realized.addToken1, oldestAdd.pool2Delta, 1, 1);
+                                poolSharesToRemove -= oldAddPoolShares;
+                            }
+                        }
+
+                        realizedPnl[poolToken].push(realized);
+                    } else {
+                        fifo.unshift({...tx});
+                    }
+                });
             });
-        });
+        }
 
         res.setHeader('Cache-Control', 'max-age=0, s-maxage=600');
         res.status(200).send({
