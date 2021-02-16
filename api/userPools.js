@@ -4,7 +4,6 @@ global.WebSocket = require("ws");
 let {balances} = require("./src/constants");
 const {client} = require("./src/dfuse");
 
-
 module.exports = async (req, res) => {
     if (!req.query.account) {
         return res.status(403).send('ERROR');
