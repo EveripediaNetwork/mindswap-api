@@ -229,4 +229,4 @@ module.exports = async (req, res) => {
         console.error("An error occurred", error);
         res.status(500).send('ERROR 500');
     }
-};
+}
