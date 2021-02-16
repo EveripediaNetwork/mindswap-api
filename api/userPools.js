@@ -25,7 +25,7 @@ module.exports = async (req, res) => {
 
     let poolBalances = balances.filter(balance => balance.contract === "mindswapswap");
 
-    const historyQuery = `query ($query: String!, $limit: Int64!, $cursor: String!, $account: String!) {
+    const historyQuery = `query ($query: String!, $limit: Int64!, $lowBlockNum: Int64!, $cursor: String!, $account: String!) {
     accountBalances(account: $account, limit: 100) {
             edges {
                 node {
@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
                 }
             }
   }
-  searchTransactionsBackward(query: $query, limit: $limit, cursor: $cursor) {
+  searchTransactionsBackward(query: $query, limit: $limit, lowBlockNum: $lowBlockNum, cursor: $cursor) {
     cursor
     results {
       block {
@@ -69,7 +69,8 @@ module.exports = async (req, res) => {
         const response = await client.graphql(historyQuery, {
             variables: {
                 account: req.query.account,
-                "limit": 500,
+                "limit": 1000,
+                "lowBlockNum": 147423300, // mindswapswap contract creation
                 "cursor": "",
                 "query": "account:mindswapswap (action:addliquidity OR action:remliquidity OR action:inittoken) auth:" + req.query.account
             },
