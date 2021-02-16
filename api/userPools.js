@@ -122,9 +122,9 @@ module.exports = async (req, res) => {
                     const supplyObj = op[0].newJSON.object.supply;
                     txn.oldBalance = op[1].oldJSON.object ? op[1].oldJSON.object.balance : `0.00 ${op[1].newJSON.object.balance.split(" ")[1]}`;
                     txn.newBalance = op[1].newJSON.object.balance;
-                    txn.oldPool1 = op[0].oldJSON.object.pool1 ? op[0].oldJSON.object.pool1.quantity : `0.00 ${op[0].newJSON.object.pool1.quantity.split(" ")[1]}`;
+                    txn.oldPool1 = op[0].oldJSON.object ? op[0].oldJSON.object.pool1.quantity : `0.00 ${op[0].newJSON.object.pool1.quantity.split(" ")[1]}`;
                     txn.newPool1 = op[0].newJSON.object.pool1.quantity;
-                    txn.oldPool2 = op[0].oldJSON.object.pool2 ? op[0].oldJSON.object.pool2.quantity : `0.00 ${op[0].newJSON.object.pool2.quantity.split(" ")[1]}`;
+                    txn.oldPool2 = op[0].oldJSON.object ? op[0].oldJSON.object.pool2.quantity : `0.00 ${op[0].newJSON.object.pool2.quantity.split(" ")[1]}`;
                     txn.newPool2 = op[0].newJSON.object.pool2.quantity;
                     txn.oldSupply = op[0].oldJSON.object ? op[0].oldJSON.object.supply : `0.00 ${op[0].newJSON.object.supply.split(" ")[1]}`;
                     txn.newSupply = op[0].newJSON.object.supply;
