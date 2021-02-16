@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config()
 global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
 const {client} = require("./src/dfuse");
@@ -229,4 +229,4 @@ module.exports = async (req, res) => {
         console.error("An error occurred", error);
         res.status(500).send('ERROR 500');
     }
-};
+}
