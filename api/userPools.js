@@ -1,4 +1,3 @@
-require('dotenv').config()
 global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
 const {client} = require("./src/dfuse");
