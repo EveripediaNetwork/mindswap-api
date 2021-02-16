@@ -202,7 +202,7 @@ module.exports = async (req, res) => {
                             realized.addToken1 = addAssetAmount(realized.addToken1, oldestAdd.pool1Delta, 1, portionOfPool);
                             realized.addToken2 = addAssetAmount(realized.addToken1, oldestAdd.pool2Delta, 1, portionOfPool);
 
-                            realized.matchType = "partial";
+                            realized.matchType = "hasPartial";
 
                             poolSharesToRemove = 0;
                         } else {
