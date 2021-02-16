@@ -112,26 +112,26 @@ module.exports = async (req, res) => {
                 const action = transaction.trace.matchingActions[0];
                 txn.event = action.name;
 
-                txn.toTrade1 = action.json.max_asset1 || action.json.min_asset1 || action.json.initial_pool1?.quantity;
-                txn.toTrade2 = action.json.max_asset2 || action.json.min_asset2 || action.json.initial_pool2?.quantity;
+                txn.toTrade1 = action.json.max_asset1 || action.json.min_asset1 || action.json.initial_pool1.quantity;
+                txn.toTrade2 = action.json.max_asset2 || action.json.min_asset2 || action.json.initial_pool2.quantity;
                 txn.user = action.json.user;
 
                 const op = transaction.trace.matchingActions[0].dbOps;
                 if (action.name === "inittoken") { // pool creation
-                    txn.toBuySell = op[1].newJSON.object?.balance;
-                    const supplyObj = op[0].newJSON.object?.supply;
+                    txn.toBuySell = op[1].newJSON.object.balance;
+                    const supplyObj = op[0].newJSON.object.supply;
                     txn.oldBalance = op[1].oldJSON.object ? op[1].oldJSON.object.balance : `0.00 ${op[1].newJSON.object.balance.split(" ")[1]}`;
                     txn.newBalance = op[1].newJSON.object.balance;
-                    txn.oldPool1 = op[0].oldJSON.object?.pool1 ? op[0].oldJSON.object.pool1.quantity : `0.00 ${op[0].newJSON.object.pool1.quantity.split(" ")[1]}`;
+                    txn.oldPool1 = op[0].oldJSON.object.pool1 ? op[0].oldJSON.object.pool1.quantity : `0.00 ${op[0].newJSON.object.pool1.quantity.split(" ")[1]}`;
                     txn.newPool1 = op[0].newJSON.object.pool1.quantity;
-                    txn.oldPool2 = op[0].oldJSON.object?.pool2 ? op[0].oldJSON.object.pool2.quantity : `0.00 ${op[0].newJSON.object.pool2.quantity.split(" ")[1]}`;
+                    txn.oldPool2 = op[0].oldJSON.object.pool2 ? op[0].oldJSON.object.pool2.quantity : `0.00 ${op[0].newJSON.object.pool2.quantity.split(" ")[1]}`;
                     txn.newPool2 = op[0].newJSON.object.pool2.quantity;
                     txn.oldSupply = op[0].oldJSON.object ? op[0].oldJSON.object.supply : `0.00 ${op[0].newJSON.object.supply.split(" ")[1]}`;
                     txn.newSupply = op[0].newJSON.object.supply;
-                    txn.supplyToken = supplyObj?.split(" ")[1];
+                    txn.supplyToken = supplyObj.split(" ")[1];
                 } else {
                     txn.toBuySell = action.json.to_buy || action.json.to_sell;
-                    const supplyObj = op[3].newJSON.object?.supply || op[3].oldJSON.object?.supply;
+                    const supplyObj = op[3].newJSON.object.supply || op[3].oldJSON.object.supply;
                     txn.oldBalance = op[2].oldJSON.object ? op[2].oldJSON.object.balance : `0.00 ${op[2].newJSON.object.balance.split(" ")[1]}`;
                     txn.newBalance = op[2].newJSON.object.balance;
                     txn.oldPool1 = op[3].oldJSON.object.pool1.quantity;
@@ -140,7 +140,7 @@ module.exports = async (req, res) => {
                     txn.newPool2 = op[3].newJSON.object.pool2.quantity;
                     txn.oldSupply = op[3].oldJSON.object.supply;
                     txn.newSupply = op[3].newJSON.object.supply;
-                    txn.supplyToken = supplyObj?.split(" ")[1];
+                    txn.supplyToken = supplyObj.split(" ")[1];
                 }
 
                 txn.pool1Delta = subtractAssetAmount(txn.newPool1, txn.oldPool1);
