@@ -69,7 +69,7 @@ module.exports = async (req, res) => {
         const response = await client.graphql(historyQuery, {
             variables: {
                 account: req.query.account,
-                "limit": 1000,
+                "limit": 500,
                 "cursor": "",
                 "query": "account:mindswapswap (action:addliquidity OR action:remliquidity OR action:inittoken) auth:" + req.query.account
             },
