@@ -4,24 +4,24 @@ global.WebSocket = require("ws");
 const {client} = require("./src/dfuse");
 let {balances} = require("./src/constants");
 
-const addAssetAmount = (original, add, portionOriginal = 1, portionAdd = 1) => {
-    const originalAmt = portionOriginal * Number(original.split(" ")[0]);
-    const addAmt = portionAdd * Number(add.split(" ")[0]);
-    return `${originalAmt + addAmt} ${add.split(" ")[1]}`;
-};
-const subtractAssetAmount = (original, remove, portionOriginal = 1, portionAdd = 1) => {
-    const originalAmt = portionOriginal * Number(original.split(" ")[0]);
-    const removeAmt = portionAdd * Number(remove.split(" ")[0]);
-    return `${originalAmt - removeAmt} ${remove.split(" ")[1]}`;
-};
-const significantValues = (asset) => asset.split(" ")[0].split(".")[1].length;
-const toAsset = (amount, templateAsset) => `${amount.toFixed(significantValues(templateAsset))} ${templateAsset.split(" ")[1]}`;
-const getAssetAmount = (asset) => Number(asset.split(" ")[0]);
-
 module.exports = async (req, res) => {
     if (!req.query.account) {
         return res.status(403).send('ERROR');
     }
+    
+    const addAssetAmount = (original, add, portionOriginal = 1, portionAdd = 1) => {
+        const originalAmt = portionOriginal * Number(original.split(" ")[0]);
+        const addAmt = portionAdd * Number(add.split(" ")[0]);
+        return `${originalAmt + addAmt} ${add.split(" ")[1]}`;
+    };
+    const subtractAssetAmount = (original, remove, portionOriginal = 1, portionAdd = 1) => {
+        const originalAmt = portionOriginal * Number(original.split(" ")[0]);
+        const removeAmt = portionAdd * Number(remove.split(" ")[0]);
+        return `${originalAmt - removeAmt} ${remove.split(" ")[1]}`;
+    };
+    const significantValues = (asset) => asset.split(" ")[0].split(".")[1].length;
+    const toAsset = (amount, templateAsset) => `${amount.toFixed(significantValues(templateAsset))} ${templateAsset.split(" ")[1]}`;
+    const getAssetAmount = (asset) => Number(asset.split(" ")[0]);
 
     let poolBalances = balances.filter(balance => balance.contract === "mindswapswap");
 
