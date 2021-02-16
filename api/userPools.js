@@ -43,6 +43,7 @@ module.exports = async (req, res) => {
         timestamp
       }
       trace {
+        id
         status
         matchingActions {
           name
@@ -61,18 +62,18 @@ module.exports = async (req, res) => {
     }
   }
 }
-`
+`;
 
     try {
         let pools = [];
         const response = await client.graphql(historyQuery, {
             variables: {
                 account: req.query.account,
-                "limit": 100,
+                "limit": 1000,
                 "cursor": "",
-                "query": "account:mindswapswap (action:addliquidity OR action:remliquidity) auth:" + req.query.account
+                "query": "account:mindswapswap (action:addliquidity OR action:remliquidity OR action:inittoken) auth:" + req.query.account
             },
-        })
+        });
         const states = await client.stateTableScopes("mindswapswap", "stat");
         const tables = await client.stateTablesForScopes("mindswapswap", states.scopes, "stat", {
             json: true,
