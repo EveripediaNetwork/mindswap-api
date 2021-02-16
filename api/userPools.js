@@ -1,5 +1,3 @@
-import {getUserPoolPnl} from "../src/dataStore";
-
 require('dotenv').config();
 global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
@@ -24,8 +22,6 @@ module.exports = async (req, res) => {
     if (!req.query.account) {
         return res.status(403).send('ERROR');
     }
-
-    const pnl = await getUserPoolPnl(req.query.account);
 
     let poolBalances = balances.filter(balance => balance.contract === "mindswapswap");
 
