@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@dfuse/client": "^0.3.17",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.1.0",
     "eosjs": "^21.0.3",
     "node-fetch": "^2.6.1",
     "ws": "^7.4.1"
