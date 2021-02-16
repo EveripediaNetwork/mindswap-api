@@ -1,8 +1,8 @@
 require('dotenv').config()
 global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
-let {balances} = require("./src/constants");
 const {client} = require("./src/dfuse");
+let {balances} = require("./src/constants");
 
 module.exports = async (req, res) => {
     if (!req.query.account) {
@@ -29,7 +29,6 @@ module.exports = async (req, res) => {
         timestamp
       }
       trace {
-      id
         status
         matchingActions {
           name
@@ -48,18 +47,18 @@ module.exports = async (req, res) => {
     }
   }
 }
-`;
+`
 
     try {
         let pools = [];
         const response = await client.graphql(historyQuery, {
             variables: {
                 account: req.query.account,
-                "limit": 1000,
+                "limit": 100,
                 "cursor": "",
-                "query": "account:mindswapswap (action:addliquidity OR action:remliquidity OR action:inittoken) auth:" + req.query.account
+                "query": "account:mindswapswap (action:addliquidity OR action:remliquidity) auth:" + req.query.account
             },
-        });
+        })
         const states = await client.stateTableScopes("mindswapswap", "stat");
         const tables = await client.stateTablesForScopes("mindswapswap", states.scopes, "stat", {
             json: true,
@@ -69,7 +68,7 @@ module.exports = async (req, res) => {
 
         tables.tables.forEach((table) => {
             pools.push(table.rows[0]);
-        });
+        })
 
         response.data.accountBalances.edges.forEach((balance) => {
             poolBalances.forEach(initialBalance => {
@@ -83,58 +82,32 @@ module.exports = async (req, res) => {
                     initialBalance.balance = parseInt(balance.node.balance.split(" ")[0].replace(".", ""))
                 }
             });
-        });
+        })
 
         const responseHistory = response.data.searchTransactionsBackward.results;
-        let transactionHistory = [];
-        const transactionHistoryByPool = {};
-        const realizedPnl = {};
-        if (responseHistory) {
-            responseHistory.forEach(transaction => {
-                let txn = {};
-
+        let transactionHistory=[];
+        if(responseHistory){
+            responseHistory.forEach( transaction => {
+                let txn = {}
                 txn.time = transaction.block.timestamp;
-                txn.txId = transaction.trace.id;
 
                 const action = transaction.trace.matchingActions[0];
                 txn.event = action.name;
-
-                txn.toTrade1 = action.json.max_asset1 || action.json.min_asset1 || action.json.initial_pool1?.quantity;
-                txn.toTrade2 = action.json.max_asset2 || action.json.min_asset2 || action.json.initial_pool2?.quantity;
+                txn.toTrade1 = action.json.max_asset1;
+                txn.toTrade2 = action.json.max_asset2;
+                txn.toBuy = action.json.to_buy;
                 txn.user = action.json.user;
 
                 const op = transaction.trace.matchingActions[0].dbOps;
-                if (action.name === "inittoken") { // pool creation
-                    txn.toBuySell = op[1].newJSON.object?.balance;
-                    const supplyObj = op[0].newJSON.object?.supply;
-                    txn.oldBalance = op[1].oldJSON.object ? op[1].oldJSON.object.balance : `0.00 ${op[1].newJSON.object.balance.split(" ")[1]}`;
-                    txn.newBalance = op[1].newJSON.object.balance;
-                    txn.oldPool1 = op[0].oldJSON.object?.pool1 ? op[0].oldJSON.object.pool1.quantity : `0.00 ${op[0].newJSON.object.pool1.quantity.split(" ")[1]}`;
-                    txn.newPool1 = op[0].newJSON.object.pool1.quantity;
-                    txn.oldPool2 = op[0].oldJSON.object?.pool2 ? op[0].oldJSON.object.pool2.quantity : `0.00 ${op[0].newJSON.object.pool2.quantity.split(" ")[1]}`;
-                    txn.newPool2 = op[0].newJSON.object.pool2.quantity;
-                    txn.oldSupply = op[0].oldJSON.object ? op[0].oldJSON.object.supply : `0.00 ${op[0].newJSON.object.supply.split(" ")[1]}`;
-                    txn.newSupply = op[0].newJSON.object.supply;
-                    txn.supplyToken = supplyObj?.split(" ")[1];
-                } else {
-                    txn.toBuySell = action.json.to_buy || action.json.to_sell;
-                    const supplyObj = op[3].newJSON.object?.supply || op[3].oldJSON.object?.supply;
-                    txn.oldBalance = op[2].oldJSON.object ? op[2].oldJSON.object.balance : `0.00 ${op[2].newJSON.object.balance.split(" ")[1]}`;
-                    txn.newBalance = op[2].newJSON.object.balance;
-                    txn.oldPool1 = op[3].oldJSON.object.pool1.quantity;
-                    txn.newPool1 = op[3].newJSON.object.pool1.quantity;
-                    txn.oldPool2 = op[3].oldJSON.object.pool2.quantity;
-                    txn.newPool2 = op[3].newJSON.object.pool2.quantity;
-                    txn.oldSupply = op[3].oldJSON.object.supply;
-                    txn.newSupply = op[3].newJSON.object.supply;
-                    txn.supplyToken = supplyObj?.split(" ")[1];
-                }
-
+                txn.oldBalance = op[2].oldJSON.object ? op[2].oldJSON.object.balance : `0.00 ${op[2].newJSON.object.balance.split(" ")[1]}`;
+                txn.newBalance = op[2].newJSON.object.balance;
+                txn.oldPool1 = op[3].oldJSON.object.pool1.quantity;
+                txn.newPool1 = op[3].newJSON.object.pool1.quantity;
+                txn.oldPool2 = op[3].oldJSON.object.pool2.quantity;
+                txn.newPool2 = op[3].newJSON.object.pool2.quantity;
+                txn.oldSupply = op[3].oldJSON.object.supply;
+                txn.newSupply = op[3].newJSON.object.supply;
                 transactionHistory.push(txn);
-                if (!(txn.supplyToken in transactionHistoryByPool)) {
-                    transactionHistoryByPool[txn.supplyToken] = [];
-                }
-                transactionHistoryByPool[txn.supplyToken].push(txn);
             });
         }
 
@@ -143,13 +116,10 @@ module.exports = async (req, res) => {
             pools: pools,
             current: poolBalances,
             transactions: (transactionHistory) ? transactionHistory : null,
-            transactionHistoryByPool: transactionHistoryByPool,
-            responseHistory: responseHistory,
-            realizedPnl: realizedPnl
         });
 
     } catch (error) {
-        console.error("An error occurred", error);
+        console.error("An error occurred", error)
         res.status(500).send('ERROR 500');
     }
 }
