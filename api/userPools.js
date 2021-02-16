@@ -1,8 +1,9 @@
 require('dotenv').config()
 global.fetch = require("node-fetch");
 global.WebSocket = require("ws");
-const {client} = require("./src/dfuse");
 let {balances} = require("./src/constants");
+const {client} = require("./src/dfuse");
+
 
 module.exports = async (req, res) => {
     if (!req.query.account) {
