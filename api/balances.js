@@ -58,7 +58,8 @@ module.exports = async (req, res) => {
 
         client.release()
 
-        res.status(200).send(balances);
+        res.setHeader('Cache-Control', 'Cache-Control: s-maxage=1, stale-while-revalidate');
+        res.status(200).send({req.query.account,balances});
     } catch (error) {
         console.error("An error occurred", error)
         res.status(500).send('ERROR 500');
