@@ -22,7 +22,7 @@ module.exports = async (req, res) => {
             pools.push(table.rows[0]);
         })
 
-        res.setHeader('Cache-Control', 'Cache-Control: s-maxage=1, stale-while-revalidate');
+        res.setHeader('Cache-Control: s-maxage=1, stale-while-revalidate');
         res.status(200).send({
             pools
         });
