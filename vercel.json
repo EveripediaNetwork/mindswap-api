@@ -4,6 +4,10 @@
       "source": "/api/(.*)",
       "headers": [
         {
+          "key":"Cache-Control",
+          "value":"no-cache"
+        },
+        {
           "key": "Access-Control-Allow-Credentials",
           "value": "true"
         },
