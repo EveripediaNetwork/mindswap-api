@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
             "circulatingSupply": supply,
             "maxSupply": 21000000000,
             "provider": "Everipedia",
-            "lastUpdatedTimestamp": data.last_updated_at
+            "lastUpdatedTimestamp": data.last_updated_at * 1000
         },
         {
             "symbol": "IQ",
@@ -44,7 +44,7 @@ module.exports = async (req, res) => {
             "circulatingSupply": supply,
             "maxSupply": 21000000000,
             "provider": "Everipedia",
-            "lastUpdatedTimestamp": data.last_updated_at
+            "lastUpdatedTimestamp": data.last_updated_at * 1000
         },
         {
             "symbol": "IQ",
@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
             "circulatingSupply": supply,
             "maxSupply": 21000000000,
             "provider": "Everipedia",
-            "lastUpdatedTimestamp": data.last_updated_at
+            "lastUpdatedTimestamp": data.last_updated_at * 1000
         }
         ,
         {
@@ -67,7 +67,7 @@ module.exports = async (req, res) => {
             "circulatingSupply": supply,
             "maxSupply": 21000000000,
             "provider": "Everipedia",
-            "lastUpdatedTimestamp": data.last_updated_at
+            "lastUpdatedTimestamp": data.last_updated_at * 1000
         }
         ,
         {
@@ -79,7 +79,7 @@ module.exports = async (req, res) => {
             "circulatingSupply": supply,
             "maxSupply": 21000000000,
             "provider": "Everipedia",
-            "lastUpdatedTimestamp": data.last_updated_at
+            "lastUpdatedTimestamp": data.last_updated_at * 1000
         }
     ])
 }
