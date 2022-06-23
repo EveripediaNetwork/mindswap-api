@@ -1,3 +1,4 @@
+const {circulatingSupply} = require("./info");
 const info = require("./info");
 const fetch = require("node-fetch");
 require('dotenv').config();
@@ -33,7 +34,7 @@ async function getIQBalance(account) {
       }) 
     }
   );
-  const supply = await info.circulatingSupply();
+  const supply = await circulatingSupply();
   const result = await data.json();
   
   if(!result[0] || !result[0].split(' ')[0])
