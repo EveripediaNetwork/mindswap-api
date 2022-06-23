@@ -7,7 +7,7 @@ global.fetch = require('node-fetch');
 async function getIQBalanceFromBrainDao() {
   const data = await fetch("https://ethplorer.io/service/service.php?data=0x56398b89d53e8731bca8C1B06886CFB14BD6b654");
   const result = await data.json();
-  const balance = result.balances.find(b === "0x579cea1889991f68acc35ff5c3dd0621ff29b0c9")
+  const balance = result.balances.find(b => b === "0x579cea1889991f68acc35ff5c3dd0621ff29b0c9")
 
   if(!balance)
     throw new Error("Unable to get the IQ balance");
