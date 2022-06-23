@@ -1,9 +1,18 @@
-const {circulatingSupply} = require("./info");
-const info = require("./info");
 const fetch = require("node-fetch");
 require('dotenv').config();
 global.fetch = require('node-fetch');
 
+async function circulatingSupply() {
+  const IQonEOS = 10021453884;
+  const data = await fetch("https://ethplorer.io/service/service.php?data=0x579cea1889991f68acc35ff5c3dd0621ff29b0c9");
+  const result = await data.json();
+  const IQonETH = result.token.totalSupply / 1e18;
+
+  const data2 = await fetch("https://ethplorer.io/service/service.php?data=0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea");
+  const result2 = await data2.json();
+  const pIQonETH = result2.token.totalSupply / 1e18;
+  return IQonEOS + IQonETH - pIQonETH;
+}
 
 async function getIQBalanceFromBrainDao() {
   const data = await fetch("https://ethplorer.io/service/service.php?data=0x56398b89d53e8731bca8C1B06886CFB14BD6b654");
