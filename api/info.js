@@ -20,6 +20,8 @@ async function coinGeckoData() {
     return result.everipedia
 }
 
+module.exports.circulatingSupply = circulatingSupply;
+
 module.exports = async (req, res) => {
     const supply = await circulatingSupply();
     const data = await coinGeckoData();
