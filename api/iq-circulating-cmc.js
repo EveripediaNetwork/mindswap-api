@@ -29,7 +29,6 @@ async function getCirculatingSupply() {
 }
 
 module.exports = async (_, res) => {
-  // const result = await getIQBalance('iqlockupctcr');
   const circulatingSupply = await getCirculatingSupply();
   const balanceFromBraindao = await getIQBalanceFromBrainDao();
   const result = Number(circulatingSupply - balanceFromBraindao);
