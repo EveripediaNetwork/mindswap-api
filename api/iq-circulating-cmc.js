@@ -34,6 +34,6 @@ module.exports = async (_, res) => {
   const result = Number(circulatingSupply - balanceFromBraindao);
 
   if (result instanceof Error) return res.status(500).send(result);
-
+  res.setHeader('Cache-Control', 'max-age=60, s-maxage=60')
   return res.status(200).send(result);
 };

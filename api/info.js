@@ -5,16 +5,16 @@ global.fetch = require("node-fetch");
 async function circulatingSupply() {
   const IQonEOS = 10021453884;
   const data = await fetch(
-    "https://ethplorer.io/service/service.php?data=0x579cea1889991f68acc35ff5c3dd0621ff29b0c9"
+    "https://api.ethplorer.io/getTokenInfo/0x579cea1889991f68acc35ff5c3dd0621ff29b0c9?apiKey=freekey"
   );
   const result = await data.json();
-  const IQonETH = result.token.totalSupply / 1e18;
+  const IQonETH = result.totalSupply / 1e18;
 
   const data2 = await fetch(
-    "https://ethplorer.io/service/service.php?data=0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea"
+    "https://api.ethplorer.io/getTokenInfo/0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea?apiKey=freekey"
   );
   const result2 = await data2.json();
-  const pIQonETH = result2.token.totalSupply / 1e18;
+  const pIQonETH = result2.totalSupply / 1e18;
   return IQonEOS + IQonETH - pIQonETH;
 }
 
@@ -31,6 +31,7 @@ module.exports.circulatingSupply = circulatingSupply();
 module.exports = async (_, res) => {
   const supply = await circulatingSupply();
   const data = await coinGeckoData();
+  res.setHeader('Cache-Control', 'max-age=60, s-maxage=60');
   res.status(200).send([
     {
       symbol: "IQ",
