@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 async function getIQBalanceFromBrainDao() {
   const data = await fetch(
     "https://ethplorer.io/service/service.php?data=0x56398b89d53e8731bca8C1B06886CFB14BD6b654"
@@ -12,6 +14,14 @@ async function getIQBalanceFromBrainDao() {
   return item.balance / 1e18;
 }
 
+async function getMinterBalance() {
+  const data = await fetch(
+    "https://api.ethplorer.io/getAddressInfo/0x30953aebf5e3f2c139e9e19bf246dd3a575ddaf7?token=0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea&showETHTotals=false&apiKey=" + process.env.ETHPLORER_KEY
+  );
+  const result = await data.json();
+  return result.tokens[0].balance / 1e18;
+}
+
 async function getCirculatingSupply() {
   const IQonEOS = 10021453884;
   const data = await fetch(
@@ -20,11 +30,7 @@ async function getCirculatingSupply() {
   const result = await data.json();
   const IQonETH = result.token.totalSupply / 1e18;
 
-  const data2 = await fetch(
-    "https://ethplorer.io/service/service.php?data=0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea"
-  );
-  const result2 = await data2.json();
-  const pIQonETH = result2.token.totalSupply / 1e18;
+  const pIQonETH = await getMinterBalance();
   return IQonEOS + IQonETH - pIQonETH;
 }
 

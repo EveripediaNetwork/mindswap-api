@@ -2,19 +2,23 @@ const fetch = require("node-fetch");
 require("dotenv").config();
 global.fetch = require("node-fetch");
 
+async function getMinterBalance() {
+  const data = await fetch(
+    "https://api.ethplorer.io/getAddressInfo/0x30953aebf5e3f2c139e9e19bf246dd3a575ddaf7?token=0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea&showETHTotals=false&apiKey=freekey"
+  );
+  const result = await data.json();
+  return result.tokens[0].balance / 1e18;
+}
+
 async function circulatingSupply() {
   const IQonEOS = 10021453884;
   const data = await fetch(
-    "https://api.ethplorer.io/getTokenInfo/0x579cea1889991f68acc35ff5c3dd0621ff29b0c9?apiKey=freekey"
+    "https://api.ethplorer.io/getTokenInfo/0x579cea1889991f68acc35ff5c3dd0621ff29b0c9?apiKey=" + process.env.ETHPLORER_KEY
   );
   const result = await data.json();
   const IQonETH = result.totalSupply / 1e18;
 
-  const data2 = await fetch(
-    "https://api.ethplorer.io/getTokenInfo/0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea?apiKey=freekey"
-  );
-  const result2 = await data2.json();
-  const pIQonETH = result2.totalSupply / 1e18;
+  const pIQonETH = await getMinterBalance();
   return IQonEOS + IQonETH - pIQonETH;
 }
 
