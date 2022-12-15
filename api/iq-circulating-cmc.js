@@ -23,7 +23,7 @@ async function getMinterBalance() {
 }
 
 async function getCirculatingSupply() {
-  const IQonEOS = 10021453884;
+  const IQonEOS = 10021454884;
   const data = await fetch(
     "https://ethplorer.io/service/service.php?data=0x579cea1889991f68acc35ff5c3dd0621ff29b0c9"
   );
