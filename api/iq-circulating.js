@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 require("dotenv").config();
 global.fetch = require("node-fetch");
+const {eos_supply} = require("./src/constants");
 
 async function getMinterBalance() {
   const data = await fetch(
@@ -11,7 +12,6 @@ async function getMinterBalance() {
 }
 
 async function circulatingSupply() {
-  const IQonEOS = 10021454884;
   const data = await fetch(
     "https://api.ethplorer.io/getTokenInfo/0x579cea1889991f68acc35ff5c3dd0621ff29b0c9?apiKey=" + process.env.ETHPLORER_KEY
   );
@@ -19,7 +19,7 @@ async function circulatingSupply() {
   const IQonETH = result.totalSupply / 1e18;
 
   const pIQonETH = await getMinterBalance();
-  return IQonEOS + IQonETH - pIQonETH;
+  return eos_supply + IQonETH - pIQonETH;
 }
 
 async function getIQBalanceFromBrainDao() {

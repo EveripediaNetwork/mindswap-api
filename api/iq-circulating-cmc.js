@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const {eos_supply} = require("./src/constants");
 
 async function getIQBalanceFromBrainDao() {
   const data = await fetch(
@@ -23,7 +24,6 @@ async function getMinterBalance() {
 }
 
 async function getCirculatingSupply() {
-  const IQonEOS = 10021454884;
   const data = await fetch(
     "https://ethplorer.io/service/service.php?data=0x579cea1889991f68acc35ff5c3dd0621ff29b0c9"
   );
@@ -31,7 +31,7 @@ async function getCirculatingSupply() {
   const IQonETH = result.token.totalSupply / 1e18;
 
   const pIQonETH = await getMinterBalance();
-  return IQonEOS + IQonETH - pIQonETH;
+  return eos_supply + IQonETH - pIQonETH;
 }
 
 module.exports = async (_, res) => {

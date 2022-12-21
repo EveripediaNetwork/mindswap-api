@@ -352,3 +352,4 @@ for (const token of tokens) {
 
 module.exports.tokens = tokens;
 module.exports.balances = balances;
+module.exports.eos_supply = 10021454884;
