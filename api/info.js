@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 require("dotenv").config();
 global.fetch = require("node-fetch");
-const {eos_supply} = require("./src/constants");
+const { getEosSupply } = require("./utils/eosUtil");
 
 async function getMinterBalance() {
   const data = await fetch(
@@ -18,6 +18,7 @@ async function circulatingSupply() {
   const result = await data.json();
   const IQonETH = result.totalSupply / 1e18;
   const pIQonETH = await getMinterBalance();
+  const eos_supply = await getEosSupply()
   return eos_supply + IQonETH - pIQonETH;
 }
 
