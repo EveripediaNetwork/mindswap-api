@@ -6,7 +6,7 @@ export const getEosSupply = async () => {
       const result = await response.json()
       return result[0].supply.circulating
     } catch (err) {
-      console.log(getError(err))
+      console.log(err.response.message)
       return 0
     }
 }
