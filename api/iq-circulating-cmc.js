@@ -1,5 +1,5 @@
 const fetch = require('node-fetch');
-const {eos_supply} = require("./src/constants");
+const { getEosSupply } = require('./utils/eosUtil');
 
 async function getIQBalanceFromBrainDao() {
   const data = await fetch(
@@ -31,6 +31,7 @@ async function getCirculatingSupply() {
   const IQonETH = result.token.totalSupply / 1e18;
 
   const pIQonETH = await getMinterBalance();
+  const eos_supply = await getEosSupply()
   return eos_supply + IQonETH - pIQonETH;
 }
 
