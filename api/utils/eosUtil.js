@@ -14,7 +14,7 @@ const getEosSupplyUsingGreymassAPI = async () => {
     const result = response.data.rows[0].supply.split(' ')
     return result[0]
   } catch (err) {
-    console.log(getError(err))
+    console.log(err.response.message)
     return 0
   }
 }
@@ -25,7 +25,10 @@ export const getEosSupply = async () => {
         'https://www.api.bloks.io/tokens/IQ-eos-everipediaiq',
       )
       const result = await response.json()
-      return result[0].supply.circulating
+      const iqSupply = result[0].supply.circulating
+      if (iqSupply > 0) return iqSupply
+      const fallBackAPIIqSupply = await getEosSupplyUsingGreymassAPI()
+      return fallBackAPIIqSupply
     } catch (err) {
       console.log(err.response.message)
       const result = await getEosSupplyUsingGreymassAPI()
