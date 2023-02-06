@@ -1,18 +1,18 @@
-import axios from "axios"
+global.fetch = require("node-fetch");
 
 const getEosSupplyUsingGreymassAPI = async () => {
   try {
-    const response = await axios.post(
-      'https://eos.greymass.com/v1/chain/get_table_rows',
-      '{"json":true,"code":"everipediaiq","scope":"IQ","table":"stat","index_position":1,"key_type":"","limit":"1"}',
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-      },
-    )
-    const result = response.data.rows[0].supply.split(' ')
-    return result[0]
+
+    const body = {"json":true,"code":"everipediaiq","scope":"IQ","table":"stat","index_position":1,"key_type":"","limit":"1"};
+
+    const response = await fetch('https://eos.greymass.com/v1/chain/get_table_rows', {
+      method: 'post',
+      body: JSON.stringify(body),
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    });
+    const data = await response.json();
+    const result = data.rows[0].supply.split(' ')
+    return parseInt(result[0])
   } catch (err) {
     console.log(err.response.message)
     return 0
